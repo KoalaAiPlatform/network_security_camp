@@ -7,7 +7,7 @@ docker images
 ![Alt text](image.png)
 ## 2. 启动 CentOS；
 
-### 2.1 以有台方式启动 CentOS
+### 2.1 以后台方式启动 CentOS
 
 ```shell
 docker run -d centos
