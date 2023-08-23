@@ -29,11 +29,6 @@ docker run -it centos
 ```
 ![Alt text](image-3.png)
 
-#### 新开终端窗口，查看容器状态
-```shell
-docker ps -a
-```
-![Alt text](image-4.png)
 #### 保持退出
 ```shell
 ctrl + Q + P
