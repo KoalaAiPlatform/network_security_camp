@@ -42,8 +42,34 @@ ctrl + Q + P
 # 三、 MySQL 练习
 
 * 创建一个名为 GeekTime 的数据库；
+
+```shell
+ create database GeekTime;
+```
+![Alt text](image-7.png)
+
 * 在 GeekTime 数据库中创建一张名为 table_Sec 的表，要求有序号、姓名、年龄、性别字段；
+```mysql
+
+create table table_Sec (
+    id int unsigned auto_increment,
+    name varchar(32) null,
+    age int unsigned default 0,
+    sex varchar(10) default 'man',
+    primary key (id)
+);
+```
+
+![Alt text](image-8.png)
 * 在 table_Sec 表中插入数据，序号是 20230819，姓名是拼音缩写，年龄、性别无要求 ;
+
+```mysql
+insert into table_Sec values (20230819,'zs',18,'man');
+```
+![Alt text](image-9.png)
+
 * 使用 Navicat 连接你所创建的数据库，查看个人信息并提供截图。
+
+![Alt text](image-10.png)
 
 # 四、 回顾课件中关于 HTTP 协议的相关知识点，包括格式、请求方法、状态码等，练习使用 HackBar 工具。
