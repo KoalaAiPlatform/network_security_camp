@@ -144,7 +144,7 @@ docker run -d -p 8083:8080 hackingpub/cve-2017-12149
 
 ![Alt text](image-21.png)
 
-### 运行JBoss，命令执行漏洞工具
+### 2.2 运行JBoss，命令执行漏洞工具
 
 ```shell
 java -jar jboss_CVE-2017-12149.jar
@@ -180,11 +180,17 @@ java -jar jboss_CVE-2017-12149.jar
 nmap -A -T4 -sS -O -sV 47.97.*.***
 ```
 > 指令说明：防止敏感信息泄露，这里的ip脱敏处理。
+
 > 参数说明：
+
 > -A: 进行系统及其版本扫描。
+
 > -T: T0-T1 用于躲避 IDS。 T2 降低了扫描速度可以使用更少的带宽和目标主机资源。T3 默认模式。 T4 针对TCP端口禁止动态扫描延迟超过10ms， -T5对应的值就是5ms。
+
 > -sS: TCP SYN 扫描。
+
 > -O: 启用操作系统检测。
+
 > -sV: 打开版本探测，也可以用-A同时打开系统探测和版本探测。
 
 ## 3. 扫描结果
@@ -192,9 +198,13 @@ nmap -A -T4 -sS -O -sV 47.97.*.***
 ![Alt text](image-27.png)
 
 > 说明：
+
 > 从结果中关注状态为 open 的端口，分别为：22、80、8080、8888、9999。
+
 > 操作系统及版本：Linux 3.X|4.X|5.X (89%), Asus embedded (85%)
+
 > 系统内核版本：cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5.1 cpe:/o:linux:linux_kernel cpe:/h:asus:rt-ac66u
+
 > 进一步的操作系统猜测： Linux 3.10 - 4.11 (89%), Linux 5.1 (87%), Linux 3.2 - 4.9 (86%), Linux 3.13 or 4.2 (85%), Linux 4.1 (85%), Linux 4.10 (85%), Linux 4.2 (85%), Linux 4.4 (85%), Asus RT-AC66U WAP (85%), Linux 3.11 - 3.12 (85%)
 
 # 六、以任一企业为关键词进行信息收集练习并汇总形成报告，禁止进行违规操作。
