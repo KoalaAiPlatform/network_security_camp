@@ -208,3 +208,53 @@ nmap -A -T4 -sS -O -sV 47.97.*.***
 > 进一步的操作系统猜测： Linux 3.10 - 4.11 (89%), Linux 5.1 (87%), Linux 3.2 - 4.9 (86%), Linux 3.13 or 4.2 (85%), Linux 4.1 (85%), Linux 4.10 (85%), Linux 4.2 (85%), Linux 4.4 (85%), Asus RT-AC66U WAP (85%), Linux 3.11 - 3.12 (85%)
 
 # 六、以任一企业为关键词进行信息收集练习并汇总形成报告，禁止进行违规操作。
+
+> 做了公司的信息收集，信息比较敏感，内容截图打码附上。
+
+## 1. 一级域名
+
+![Alt text](image-28.png)
+
+## 2. 子域名
+
+![Alt text](image-29.png)
+
+## 3. 旁站（同ip）
+
+![Alt text](image-30.png)
+
+## 4. 真实ip
+
+![Alt text](image-31.png)
+
+## 5. 端口+子目录
+
+### 5.1 端口
+
+![Alt text](image-32.png)
+
+### 5.2 子目录
+
+![Alt text](image-33.png)
+
+## 6. 敏感信息
+
+### 6.1 GoogleHack语法
+
+![Alt text](image-34.png)
+
+### 6.2 github
+
+![Alt text](image-35.png)
+
+### 6.3 网盘引擎
+
+![Alt text](image-36.png)
+
+### 6.4 空间搜索
+
+![Alt text](image-37.png)
+
+### 6.5 公众号搜索
+
+![Alt text](image-38.png)
