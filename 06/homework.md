@@ -56,18 +56,19 @@
 ![Alt text](image-15.png)
 
 ### 1.5 导出扫描报告
+在 Dash Board 中的 Issue activity 中选择发现的漏洞，然后右键点击，选择“report selected issues”（导出扫描报告）选项。  
 ![Alt text](image-16.png)
-在 Dash Board 中的 Issue activity 中选择发现的漏洞，然后右键点击，选择“report selected issues”（导出扫描报告）选项。   
+以html格式导出。    
 ![Alt text](image-17.png)
-以html格式导出。   
-![Alt text](image-18.png)
 漏洞描述与修复建议描述，漏洞引用等信息，根据需要进行勾选定制。   
-![Alt text](image-19.png)
+![Alt text](image-18.png)
 漏洞发现时的请求信息设置。   
-![Alt text](image-20.png)
+![Alt text](image-19.png)
 勾选需要导出的漏洞类型。   
-![Alt text](image-21.png)
+![Alt text](image-20.png)
 设置导出的目录，以及漏洞的分组形式，可以按照类型分，按照服务器分，按照 URL 分。以及漏洞的级别的过滤设置。   
+![Alt text](image-21.png)
+查看导出的扫描报告文件。
 ![Alt text](image-22.png)
 
 # 三、Burp Intruder 爆破题目
