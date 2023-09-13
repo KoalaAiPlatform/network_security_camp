@@ -14,7 +14,7 @@
 
 ## 5. 使用 Discover Content 功能爬取目标站点的目录。
 ### 5.1 在 Site Map 中，右键点击目标站点，选择 “Engagement tools--Discover Content”
-![Alt text](image-4.png)
+![Alt text](image-23.png)
 
 ### 5.2 Discover Content 说明
 ![Alt text](image-5.png)
