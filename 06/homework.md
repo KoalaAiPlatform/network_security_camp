@@ -71,6 +71,46 @@
 查看导出的扫描报告文件。
 ![Alt text](image-22.png)
 
+## 2. 主动扫描
+### 2.1 新建
+点击 “New scan” 来创建一个主动扫描任务
+![Alt text](image-4.png)
+设置扫描任务参数
+![Alt text](image-24.png) 
+> Scan type：扫描类型，“Crawl and audit” 爬取并审计；“Crawl” 爬取。   
+> URLs to scan：设置主动扫描的 URL。   
+> Protocol settings：协议设置，“Scan using HTTP & HTTPS” 使用 HTTP 和 HTTPS 协议；“Scan using specified protocols” 使用自定义协议。   
+> 其他设置：“Included URL prefixes” 基于地址开头匹配。“Excluded URL prefixes” 地址开头匹配后排除。
+
+设置扫描模式
+![Alt text](image-25.png)
+> Lightweight: 轻度扫描
+> Fast: 快速扫描
+> Balanced: 均衡扫描
+> Deep：深度扫描
+
+登录设置
+![Alt text](image-26.png)
+> 不需要，保持默认。   
+
+资源池设置
+![Alt text](image-27.png)   
+
+> Concurrent requests: 并发请求数量。
+> Request delay: 延迟请求。
+> Random delay: 随机延迟。
+> Delay increment: 累加延迟
+
+点击“OK”，保存扫描任务
+![Alt text](image-28.png)
+
+等待扫描结束
+![Alt text](image-29.png)
+
+### 2. 扫描报告
+与上面被动扫描的报告导出步骤一样，导出过程省略。
+![Alt text](image-30.png)
+
 # 三、Burp Intruder 爆破题目
 
 > 靶场地址： *****   
@@ -82,3 +122,103 @@
 ## 2. Cookie 老师在 DVWA 靶场中设置了一个账号 Geektime（注意首字母大写），且在靶场中的某处存放了一个文件名为 geekbang.txt 的密码字典，请你想办法找到该字典并尝试爆破，最终获取到账号 Geektime 的正确密码。
 
 # 五、在不依赖于 DVWA 后端数据库的情况，如何通过前端验证的方法判断 DVWA 中的注入点是数字型注入还是字符型注入？（提示：用假设法进行逻辑判断）
+
+## 1. 定义
+* 字符型注入：当输入的参数为字符串时，若存在注入漏洞，称为字符型注入。
+* 数字型注入：当输入的参数为整形时，若存在注入漏洞，称为数字型注入。
+
+## 2. 推导过程
+### 2.1 查看正常功能
+当我们输入id后，会查询出来id对应的数据。先输入 1：
+![Alt text](image-31.png)
+再输入 2：
+![Alt text](image-35.png)
+### 2.2 使用 HackBar 工具，“Load URL”。
+![Alt text](image-32.png)
+
+### 2.3 使用 `1'` 进行验证。
+```text
+http://huanxue.com:8081/vulnerabilities/sqli/?id=1'&Submit=Submit#
+```
+![Alt text](image-33.png)
+明显的sql拼写错误的报错，说明此处`id`可能存在 SQL 注入的点。
+#### 2.3.1 假设此处 id 为数字型。
+那么此处正常在系统中运行的sql，可能如下：
+```Mysql
+select * from table where id = 1;
+```
+当我们重新构造了请求之后，它会变为如下：
+```Mysql
+select * from table where id = 1';
+```
+那么此处会报SQL的拼写错误。
+
+#### 2.3.2 假设此处 id 为字符型。
+那么此处正常在系统中运行的sql，可能如下：
+```Mysql
+select * from table where id = '1';
+```
+当我们重新构造了请求之后，它会变为如下：
+```Mysql
+select * from table where id = '1'';
+```
+那么此处会报SQL的拼写错误。
+
+#### 结论
+无论是字符型还是数字型，此处的 `1'` 也无法论证出来它具体的类型，只能证明可能存在 SQL 注入。
+### 2.4 假设为数字型
+#### 2.4.1 尝试构造 `1 and 1 = 1` 来看系统响应结果,预期可以正常查询出 `id = 1` 的用户信息。
+![Alt text](image-34.png)
+通过构造 `1 and 1 = 1`，可以正常查出 `id` 为 1 的 `admin` 用户的信息，那么此处的sql可能为：
+```Mysql
+select * from table where id = 1 and 1 = 1;
+```
+#### 2.4.2 基于上面的情况，继续尝试构造 `1 and 1 = 2` 来查看系统的响应结果，预期查询不出来数据，因为 `1 = 2` 恒不成立。
+![Alt text](image-36.png)
+执行结果预期之外，按照数值型的sql，运行可能如下：
+```Mysql
+select * from table where id = 1 and 1 = 2;
+```
+#### 结论
+至此，无法证明此处的SQL注入漏洞为数字型。
+### 2.5 假设为字符型
+#### 2.5.1 尝试构造 `1' #`,通过 `#` 来注释掉字符型结尾的 `'` ,使得 sql 能够正常执行，预期可以正常查询出数据。
+那么此处的sql就可能会变为如下：
+```Mysql
+select * from table where id = '1'#';
+```
+> `#` 号后面为注释掉的内容。   
+
+可以正常查询出来内容，符合预期：
+![Alt text](image-37.png)
+
+#### 2.5.2 基于上面的情况，继续尝试构造 `1' and 1 = 2#`,来查看系统的响应结果，预期查询不出来数据，因为 `1 = 2` 恒不成立。
+此处查询结果符合预期：
+![Alt text](image-38.png)
+那么此处执行的 sql 可能为：
+```Mysql
+select * from table where id = '1' and 1 = 2#';
+```
+#### 2.5.3 至此可以证明此处通过构造 `'` 以及 `#` 的注释后续的闭合，能够让 SQL 语句正常执行，以及额外添加的条件正常执行，此处的注入漏洞确实存在，但是要证明此处的注入类型，还缺少字符型证明，下面构造 `1abc' #`,预期无法查询出来 admin 用户的数据。
+查询结果超出预期，结果如下：
+![Alt text](image-39.png)
+此处构造的SQL，可能如下：
+```Mysql
+select * from table where id = '1abc'#';
+```
+#### 结论
+通过此处的推导，发现此处功能确实存在`'`闭合的情况，因为`1' #`可以正常执行，但是`1'` 却不可以，但是此处又不是字符型，因为在字符 `1abc` 的情况下，依然可以查询出 `id` 为 1 的用户信息。
+
+### 2.6 综合分析
+基于上面的推导结果，进行进一步分析：
+```Mysql
+select * from table where id = 1 and 1 = 2;
+```
+依然可以正常执行，查询出 id 为 1 的用户信息，结合字符型推导，可以证明存在 `'` 闭合的情况，所以这里会被构造成如下的情况：
+```Mysql
+select * from table where id = '1 and 1 = 2';
+```
+那么这里构造 `1 and 1 = 2` 最终以 `'1 and 1 = 2'` 执行和我们构造出的 `1abc' #` 最终以 `'1abc'`执行的情况其实一样，都是预期传入了一个不存在的`id`字符，却能查出 `id` 为 1 的 admin 用户信息，那么这里可以证明无论是 `'1 and 1 = 2'` 还是 `'1abc'` 最终都被转化为 1 进行查询了，字符型的注入并不存在这种情况，只有数值型的才会存在这种隐式替换的情况，所以这里应该是数字型注入类型。
+
+### 结论
+此处的SQL注入漏洞，属于数字型注入。
