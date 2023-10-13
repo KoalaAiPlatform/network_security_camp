@@ -226,5 +226,5 @@ curl -H "Content-Type: application/json; charset=UTF-8" -d '{"url":"https://gite
 ### 2.8 输入账号密码点击登录
 ![Alt text](image-42.png)
 
-### 2.9 查看 `beef` 后台数据
+### 2.9 查看 `beef` 后台数据，成功获取到用户名密码数据。
 ![Alt text](image-43.png)
