@@ -99,11 +99,11 @@ mv info.php info.png
 ![Alt text](image-23.png)
 ![Alt text](image-24.png)
 ![Alt text](image-26.png)   
-尝试访问
+尝试访问   
 ![Alt text](image-27.png)
 ### 2.4 上传 `info.jpg` 文件
 ![Alt text](image-25.png)   
-尝试访问
+尝试访问   
 ![Alt text](image-28.png)
 ## 3. 服务端白名单绕过：%00 截断绕过，要求虚拟机中搭建实验环境，分别实现 GET、POST 方法的绕过。
 ### 3.1 原理
@@ -207,7 +207,7 @@ mv info.php info.png
 ### 2.1 在windows虚拟机中的`upload-labs`，上传一个文件，并可以访问。
 ![Alt text](image-60.png)
 ![Alt text](image-59.png)
-### 2.2 进入容器内部，查看ip，使用容器ip进行访问
+### 2.2 查看ip，使用虚拟机ip进行访问
 ![Alt text](image-62.png)
 ![Alt text](image-63.png)
 ### 2.3 远程文件包含
@@ -217,13 +217,13 @@ http://127.0.0.1:8081/vulnerabilities/fi/?page=http://192.168.228.137/upload-lab
 ![Alt text](image-64.png)   
 验证容器php版本与包含的php版本：   
 `upload-labs` 虚拟机中版本   
-![Alt text](image-66.png)
+![Alt text](image-66.png)   
 `dvwa`容器版本   
 ![Alt text](image-65.png)
 ## 3. 中间件日志包含绕过，要求使用蚁剑连接成功。
 ### 3.1 攻击思路
 因为对站点的访问都会记录到一个access.log中，当log中如果能够记录一些可执行的恶意代码后，然后访问该日志文件，并让其中的恶意代码能够运行，从而达到远程命令执行的目的。
-### 3.2 准本工作：文件日志权限设置
+### 3.2 准备工作：文件日志权限设置
 ```shell
  chmod -R 755 /var/log/apache2
  chmod -R 644 access.log
