@@ -152,8 +152,8 @@
 |  模块   | 防火墙必须允许SMB流量出入  | 目标必须使用SMBv1协议  | 目标必须缺少MS17-010补丁  | 目标必须允许匿名IPC `$` 和管道名  |
 |  ----  | ----  |  ----  |  ----  |  ----  |
 |`exploit/windows/smb/ms17_010_eternalblue`|√|√|√||
-|`exploit/windows/smb/ms17_010_psexec`| |√|√|√|√|
-|`auxiliary/admin/smb/ms17_010_command`| |√|√|√|√|
+|`exploit/windows/smb/ms17_010_psexec`|√|√|√|√|
+|`auxiliary/admin/smb/ms17_010_command`|√|√|√|√|
 |`auxiliary/scanner/smb/smb_ms17_010`|√|√|√||
 ## 1.6 漏洞的修复
 ### 1.6.1 打开防火墙
