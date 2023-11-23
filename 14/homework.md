@@ -15,8 +15,9 @@
 ![Alt text](image-8.png)   
 尝试访问，查看是否正常启动。   
 ![Alt text](image-5.png)   
-此错误需要修改一下`DVWA`中的配置文件。   
+此错误需要修改一下`DVWA`中的配置文件，删除末尾的`.dist`。   
 ![Alt text](image-9.png)   
+修改内容。   
 ![Alt text](image-11.png)   
 修改 `php.ini`文件。   
 ![Alt text](image-16.png)   
@@ -211,7 +212,7 @@ php 站点启动成功。接下来安装安全狗。
 ![Alt text](image-58.png)   
 未成功。   
 ### 5.5 结论
-根据上述实现，可以得出此站点为防护的拦截策略为文件后缀名判断。   
+根据上述操作，可以得出此站点为防护的拦截策略为文件后缀名判断。   
 ### 5.6 尝试后缀名截断绕过
 首先修改文件后缀名：`post_a.php` -> `post_a.php;.txt`,此处 `;` 号的意义为占位。   
 ![Alt text](image-59.png)    
