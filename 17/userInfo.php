@@ -1,0 +1,1 @@
+你好<?php echo(htmlspecialchars($_POST['name']));?>,你今年<?php echo(htmlspecialchars($_POST['age'])); ?>岁了！
