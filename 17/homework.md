@@ -33,4 +33,5 @@
 ![Alt text](image-13.png)
 # 三、通过 foreach 和 for 循环分别遍历一个数组。
 [遍历数组](./array_test.php)   
-![Alt text](image-11.png)
+![Alt text](image-11.png)   
+![Alt text](image-14.png)
