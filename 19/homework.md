@@ -16,8 +16,8 @@
     }
  }
 ```
-**代码说明：**首先将 `extract_file.txt` 赋值给 `$magedu` 变量，然后获取 `$student` 变量的值，如果和 `extract_file.txt` 文件中内容一致，则拿到 `flag`。   
-**解题思路：**基于`extract()`函数的变量覆盖的特性，GET请求中，将 `$magedu` 变量重新赋值，`$student` 变量不给值，使得下面的判断为 `NULL == NULL`,满足条件后拿到`flag`。   
+**代码说明：** 首先将 `extract_file.txt` 赋值给 `$magedu` 变量，然后获取 `$student` 变量的值，如果和 `extract_file.txt` 文件中内容一致，则拿到 `flag`。   
+**解题思路：** 基于`extract()`函数的变量覆盖的特性，GET请求中，将 `$magedu` 变量重新赋值，`$student` 变量不给值，使得下面的判断为 `NULL == NULL`,满足条件后拿到`flag`。   
 ![Alt text](image.png)   
 **poc：**   
 ```url
@@ -319,14 +319,14 @@ html代码：
  </body>
  </html>
 ```
-**说明：**通过`script`标签src发送跨域请求，然后调用方法`jsonpCallback`,弹出返回内容。   
+**说明：** 通过`script`标签src发送跨域请求，然后调用方法`jsonpCallback`,弹出返回内容。   
 php代码：   
 ```php
  <?php
  $call_method = $_GET['jsonp'];
  echo $call_method . "({msg: 'json data'})";
 ```
-**说明：**通过获取到方法名然后拼接调用的方法，执行调用。   
+**说明：** 通过获取到方法名然后拼接调用的方法，执行调用。   
 ![Alt text](image-13.png)   
 # 三、复现课件中 Java 多态代码。
 ## 1. 多态
