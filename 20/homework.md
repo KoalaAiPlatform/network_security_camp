@@ -60,16 +60,16 @@ $ python cobra.py -rp
 ```bash
  python cobra.py -t ~/learn/mmall2 -f json -o /temp/report.json
 ```   
+启动服务   
+```bash
+ python cobra.py -H 127.0.0.1 -P 8888
+```   
 ![Alt text](image-17.png)   
 查看报告文件。   
 ![Alt text](image-18.png)   
 前端交互页面扫描。   
 ![Alt text](image-20.png)   
 
-启动服务   
-```bash
- python cobra.py -H 127.0.0.1 -P 8888
-```   
 ![Alt text](image-19.png)   
 可以指定git地址，也可以上传项目进行扫描。   
 ![Alt text](image-21.png)   
