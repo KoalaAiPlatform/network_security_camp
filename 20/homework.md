@@ -79,8 +79,38 @@ $ python cobra.py -rp
 ![Alt text](image-24.png)   
 ![Alt text](image-25.png)   
 ## 2. 扫描场景   
-**场景一：** 扫描 `mapper` 文件中的 `$` 拼接。
+**场景一：** 扫描 `mapper` 文件中的 `$` 拼接。   
+复制一个规则，修改编号，然后配置具体规则：
+```xml
+ <?xml version="1.0" encoding="UTF-8"?>
+<cobra document="https://github.com/WhaleShark-Team/cobra">
+    <name value="SQL注入"/>
+    <language value="*"/>
+    <match mode="regex-only-match"><![CDATA[\$\{([^}]*)\}]]></match>
+    <match2 block="in-file-up"><![CDATA[^<\?xml]]></match2>
+    <level value="1"/>
+    <test>
+        <case assert="true"><![CDATA[and name like ${productName}]]></case>
+        <case assert="false"><![CDATA[and name like #{productName}]]></case>
+    </test>
+    <solution>
+        ## 安全风险
+        sql注入。
 
+        ## 修复方案
+        使用#{}
+
+        示例修复：
+        ```
+        and name like #{productName}
+        ```
+    </solution>
+    <status value="on"/>
+    <author name="huanxue" email="*****@gmail.com"/>
+ </cobra>
+```
+结果：   
+![Alt text](image-27.png)   
 **场景二：** 使用了"YYYY"方式进行日期格式化，可能存在跨年的问题，扫描这类型的使用。   
 复制一个规则，修改编号，然后配置具体规则：
 ```xml
