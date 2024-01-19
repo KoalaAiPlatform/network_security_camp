@@ -110,7 +110,7 @@ $ python cobra.py -rp
  </cobra>
 ```
 结果：   
-![Alt text](image-27.png)   
+![Alt text](image-28.png)    
 **场景二：** 使用了"YYYY"方式进行日期格式化，可能存在跨年的问题，扫描这类型的使用。   
 复制一个规则，修改编号，然后配置具体规则：
 ```xml
